@@ -9,33 +9,93 @@
 // This shows the HTML page in "ui.html".
 figma.showUI(__html__, { 
   width: 400,
-  height: 1000,
+  height: 680,
   themeColors: true
 });
 
 // Calls to "parent.postMessage" from within the HTML page will trigger this
 // callback. The callback will be passed the "pluginMessage" property of the
 // posted message.
-figma.ui.onmessage =  (msg: {type: string, count: number}) => {
-  // One way of distinguishing between different types of messages sent from
-  // your HTML page is to use an object with a "type" property like this.
-  if (msg.type === 'create-shapes') {
-    // This plugin creates rectangles on the screen.
-    const numberOfRectangles = msg.count;
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'create-flow') {
+    try {
+      // Create all pages first
+      const pages = [
+        "🎨 Cover Page",
+        "🚀 Final Delivery", 
+        "✨ High Fidelity",
+        "🎯 Low Fidelity",
+        "🎪 Mood Boarding & Exploration",
+        "🧩 Components",
+        "🔨 Rough Work"
+      ];
 
-    const nodes: SceneNode[] = [];
-    for (let i = 0; i < numberOfRectangles; i++) {
-      const rect = figma.createRectangle();
-      rect.x = i * 150;
-      rect.fills = [{ type: 'SOLID', color: { r: 1, g: 0.5, b: 0 } }];
-      figma.currentPage.appendChild(rect);
-      nodes.push(rect);
+      // Create pages synchronously to avoid memory issues
+      const newPages = [];
+      for (const pageName of pages) {
+        const page = figma.createPage();
+        page.name = pageName;
+        page.backgrounds = [{
+          type: 'SOLID',
+          color: { r: 35/255, g: 35/255, b: 35/255 }
+        }];
+        newPages.push(page);
+      }
+
+      // Set first page as current
+      const coverPage = newPages[0];
+      await figma.setCurrentPageAsync(coverPage);
+
+      // Create cover frame
+      const coverFrame = figma.createFrame();
+      coverFrame.name = "Cover";
+      coverFrame.resize(1920, 1080);
+      coverPage.appendChild(coverFrame);
+
+      // Handle background color
+      if (msg.formData.colors?.[0]?.value) {
+        const rgb = hexToRgb(msg.formData.colors[0].value);
+        coverFrame.fills = [{
+          type: 'SOLID',
+          color: { r: rgb.r/255, g: rgb.g/255, b: rgb.b/255 }
+        }];
+      }
+
+      // Handle title text
+      if (msg.formData.title) {
+        const fontFamily = msg.formData.fontFamily || "Inter";
+        await figma.loadFontAsync({ family: fontFamily, style: "Regular" });
+        
+        const titleText = figma.createText();
+        coverFrame.appendChild(titleText);
+        
+        titleText.fontName = { family: fontFamily, style: "Regular" };
+        titleText.characters = msg.formData.title;
+        titleText.fontSize = 200;
+        titleText.textAlignHorizontal = "CENTER";
+        titleText.textAlignVertical = "CENTER";
+        
+        // Position text after all properties are set
+        titleText.x = (coverFrame.width - titleText.width) / 2;
+        titleText.y = (coverFrame.height - titleText.height) / 2;
+      }
+
+      // Set thumbnail
+      await figma.setFileThumbnailNodeAsync(coverFrame);
+      figma.notify("Flow pages created successfully!");
+    } catch (error) {
+      console.error('Plugin error:', error);
+      figma.notify(`Error: ${error}`, {error: true});
     }
-    figma.currentPage.selection = nodes;
-    figma.viewport.scrollAndZoomIntoView(nodes);
   }
-
-  // Make sure to close the plugin when you're done. Otherwise the plugin will
-  // keep running, which shows the cancel button at the bottom of the screen.
-  figma.closePlugin();
 };
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 0, b: 0 };
+}
