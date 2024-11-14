@@ -454,6 +454,26 @@ background: #333;
   opacity: 1;
 }
 
+.color-pill {
+  position: relative;
+  padding-left: 28px;  /* Increased to accommodate label */
+}
+
+.color-label {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
   </style>
 </head>
 <body>
@@ -547,23 +567,33 @@ const formData = {
   title: ''
 };
 
-function createColorPill(color, name) {
+function createColorPill(color, name, index) {
   const pill = document.createElement('div');
   pill.className = 'color-pill';
   pill.style.backgroundColor = color;
   
+  // Create label container if it's first or second color
+  if (index === 0 || index === 1) {
+    const labelContainer = document.createElement('div');
+    labelContainer.className = 'color-label';
+    labelContainer.textContent = index === 0 ? 'P' : 'S';
+    labelContainer.style.backgroundColor = getContrastColor(color);
+    labelContainer.style.color = color;
+    pill.appendChild(labelContainer);
+  }
+  
   const colorText = document.createElement('span');
   colorText.textContent = name || color;
+  colorText.style.color = getContrastColor(color);
   pill.appendChild(colorText);
   
   const removeBtn = document.createElement('button');
   removeBtn.className = 'remove-color';
   removeBtn.textContent = '×';
+  removeBtn.style.color = getContrastColor(color);
   removeBtn.onclick = (e) => {
     e.stopPropagation();
-    // Remove from UI
     pill.remove();
-    // Remove from formData
     formData.colors = formData.colors.filter(c => c.color !== color);
   };
   
@@ -582,10 +612,15 @@ function addColor() {
     
     // Add to formData
     formData.colors = formData.colors || [];
-    formData.colors.push({ color, name });
+    const index = formData.colors.length;
+    formData.colors.push({ 
+      color, 
+      name,
+      type: index === 0 ? 'primary' : index === 1 ? 'secondary' : 'regular'
+    });
     
     // Add to UI
-    colorPills.appendChild(createColorPill(color, name));
+    colorPills.appendChild(createColorPill(color, name, index));
     
     // Reset input
     colorName.value = '';
@@ -880,6 +915,19 @@ function hideLoading() {
   if (dropdown) {
     dropdown.innerHTML = '';
   }
+}
+
+function getContrastColor(hexcolor) {
+  // Remove the # if present
+  const hex = hexcolor.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
   </script>

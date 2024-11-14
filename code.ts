@@ -248,16 +248,24 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
         }
 
         if (formData.colors?.length) {
-          for (const colorData of formData.colors) {
+          for (const [index, colorData] of formData.colors.entries()) {
             const rgb = hexToRgb(colorData.color);
-            createColorStyle(
-              colorData.name,
-              { 
-                r: rgb.r / 255, 
-                g: rgb.g / 255, 
-                b: rgb.b / 255 
+            const style = figma.createPaintStyle();
+            
+            // Set folder path based on color type
+            const folderPath = index === 0 ? "Primary" : 
+                              index === 1 ? "Secondary" : 
+                              "Colors";
+            
+            style.name = `${folderPath}/${colorData.name}`;
+            style.paints = [{
+              type: 'SOLID',
+              color: { 
+                r: rgb.r/255, 
+                g: rgb.g/255, 
+                b: rgb.b/255 
               }
-            );
+            }];
           }
         }
       }
