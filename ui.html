@@ -194,7 +194,7 @@ position: fixed;
 bottom: 20px;
 left: 0;
 right: 0;
-z-index: 1000;
+z-index: 1500;
 margin: 0 20px;
 padding: 16px 24px;
 border-radius: 12px;
@@ -360,7 +360,7 @@ position: fixed;
 bottom: 20px;
 left: 0;
 right: 0;
-z-index: 1000;
+z-index: 1500;
 margin: 0 20px;
 padding: 16px 24px;
 border-radius: 12px;
@@ -552,12 +552,21 @@ function updateColorPills() {
   `).join('');
 }
 
-// Add iteration pill click handler
-document.querySelectorAll('.iteration-pill').forEach(pill => {
+// Iteration pills
+document.querySelectorAll('.iteration-pills .iteration-pill').forEach(pill => {
   pill.addEventListener('click', () => {
-    document.querySelector('.iteration-pill.active')?.classList.remove('active');
+    document.querySelector('.iteration-pills .iteration-pill.active')?.classList.remove('active');
     pill.classList.add('active');
     formData.iteration = parseInt(pill.textContent);
+  });
+});
+
+// Grid pills
+document.querySelectorAll('.grid-pills .iteration-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelector('.grid-pills .iteration-pill.active')?.classList.remove('active');
+    pill.classList.add('active');
+    formData.columns = parseInt(pill.getAttribute('data-columns') || '12');
   });
 });
 
@@ -731,7 +740,8 @@ window.submitForm = function() {
         fontFamily: formData.fontFamily,
         colors: formData.colors,
         iteration: formData.iteration,
-        layout: formData.layout
+        layout: formData.layout,
+        columns: formData.columns || 12 // Add default value
       }
     }
   }, '*');
@@ -748,20 +758,15 @@ document.getElementById('colorName').addEventListener('keypress', (e) => {
 });
 
 function setupGridColumns() {
-  const gridPills = document.querySelectorAll('.grid-pills .iteration-pill');
-  
-  gridPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelector('.grid-pills .iteration-pill.active')?.classList.remove('active');
-      pill.classList.add('active');
-      formData.columns = parseInt(pill.getAttribute('data-columns'));
-    });
-  });
-  
-  // Set default active column (12)
-  const defaultPill = document.querySelector('.grid-pills [data-columns="12"]');
-  if (defaultPill) {
-    defaultPill.click();
+  try {
+    const defaultPill = document.querySelector('.grid-pills [data-columns="12"]');
+    if (defaultPill instanceof HTMLElement) {
+      defaultPill.click();
+    }
+  } catch (error) {
+    console.error('Grid initialization failed:', error);
+    // Set default value in formData even if UI fails
+    formData.columns = 12;
   }
 }
 
@@ -820,6 +825,20 @@ async function preloadFont(fontFamily) {
   } catch (error) {
     console.error(`Failed to load font: ${fontFamily}`, error);
     return false;
+  }
+}
+
+function showLoading() {
+  const dropdown = document.getElementById('fontDropdown');
+  if (dropdown) {
+    dropdown.innerHTML = '<div class="font-option">Loading...</div>';
+  }
+}
+
+function hideLoading() {
+  const dropdown = document.getElementById('fontDropdown');
+  if (dropdown) {
+    dropdown.innerHTML = '';
   }
 }
 
