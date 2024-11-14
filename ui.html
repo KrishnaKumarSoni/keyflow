@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
+  <style>
+   
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+padding: 24px;
+background: white;
+max-width: 400px;
+}
+
+.container {
+display: flex;
+flex-direction: column;
+gap: 12px;
+padding-bottom: 24px;
+}
+
+.title {
+font-family: 'Playwrite US Modern', serif;
+font-size: 24px;
+font-weight: 400;
+margin-bottom: 16px;
+}
+
+.platform-selector {
+display: flex;
+gap: 8px;
+}
+
+.platform-btn {
+flex: 1;
+padding: 8px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+background: #F5F5F5;
+color: #666;
+transition: all 0.2s;
+}
+
+.platform-btn.active {
+background: #000;
+color: white;
+}
+
+.platform-btn:hover {
+background: #E5E5E5;
+}
+
+.platform-btn.active:hover {
+background: #333;
+}
+
+.layout-options {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+label {
+font-size: 14px;
+font-weight: 600;
+color: #333;
+margin-bottom: 8px;
+}
+
+select, input {
+width: 100%;
+padding: 12px;
+border: none;
+border-radius: 6px;
+background: #F5F5F5;
+}
+
+.color-input {
+display: flex;
+gap: 8px;
+position: relative;
+}
+
+.color-picker-wrapper {
+position: relative;
+flex-grow: 1;
+display: flex;
+align-items: center;
+}
+
+.name-input {
+width: 100%;
+padding: 12px 12px 12px 44px;
+}
+
+.color-picker {
+position: absolute;
+left: 8px;
+top: 50%;
+transform: translateY(-50%);
+width: 28px;
+height: 28px;
+padding: 0;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+-webkit-appearance: none;
+appearance: none;
+background: none;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+padding: 0;
+}
+
+.color-picker::-webkit-color-swatch {
+border: none;
+border-radius: 4px;
+}
+
+.add-btn, .flow-btn {
+padding: 8px 16px;
+border: none;
+border-radius: 6px;
+background: #000;
+color: white;
+cursor: pointer;
+transition: background 0.2s;
+}
+
+.add-btn:hover, .flow-btn:hover {
+background: #333;
+}
+
+.add-btn:active, .flow-btn:active {
+background: #000;
+}
+
+.color-pills {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+margin-top: 12px;
+}
+
+.color-pill {
+padding: 4px 12px;
+border-radius: 999px;
+font-size: 12px;
+color: white;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+min-width: 60px;
+height: 24px;
+}
+
+.iteration-pills {
+display: flex;
+gap: 8px;
+}
+
+.iteration-pill {
+width: 32px;
+height: 32px;
+border-radius: 50%;
+border: none;
+background: #F5F5F5;
+cursor: pointer;
+color: #666;
+}
+
+.iteration-pill.active {
+background: #000;
+color: white;
+}
+
+.flow-btn {
+position: fixed;
+bottom: 20px;
+left: 0;
+right: 0;
+z-index: 1000;
+margin: 0 20px;
+padding: 16px 24px;
+border-radius: 12px;
+background: #000;
+color: white;
+cursor: pointer;
+transition: background 0.2s;
+border: 4px solid white;
+}
+
+.font-selector {
+position: relative;
+width: 100%;
+}
+
+.custom-select {
+position: relative;
+}
+
+.search-input {
+width: 100%;
+padding: 12px;
+border: none;
+border-radius: 6px;
+background: #F5F5F5;
+}
+
+.dropdown-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.dropdown-list.active {
+display: block;
+}
+
+.font-option {
+padding: 12px;
+cursor: pointer;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+font-size: 14px;
+}
+
+.font-option:hover {
+background: #F5F5F5;
+}
+
+.font-option.selected {
+background: #000;
+color: white;
+}
+
+/* Section spacing */
+.platform-selector,
+.layout-options,
+.font-selector,
+.color-section,
+.iteration-section,
+.screens-section,
+.title-section {
+margin-bottom: 8px;
+}
+
+/* Inner element spacing */
+.layout-options label,
+.iteration-pills button {
+margin-bottom: 12px;
+}
+
+.input-group {
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+
+.section-divider {
+margin: 4px 0;
+}
+
+.slider-container {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.slider-value {
+color: #666;
+font-size: 14px;
+}
+
+input[type="range"] {
+width: 100%;
+height: 4px;
+background: #000;
+border-radius: 2px;
+outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+-webkit-appearance: none;
+width: 16px;
+height: 16px;
+background: #000;
+border-radius: 50%;
+cursor: pointer;
+transition: background 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+background: #333;
+}
+
+.slider-value {
+color: #666;
+font-size: 12px;
+margin-top: 4px;
+}
+
+.layout-input {
+flex-direction: row;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+}
+
+.small-input {
+max-width: 120px;
+text-align: center;
+}
+
+.small-input::placeholder {
+color: #666;
+font-size: 12px;
+}
+
+.radio-group {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.radio-option {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+input[type="radio"] {
+width: auto;
+margin: 0;
+}
+
+.flow-btn {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+z-index: 1000;
+margin: 0;
+padding: 16px 24px;
+border-radius: 12px 12px 0 0;
+}
+
+.container {
+padding-bottom: 100px;
+}
+
+.dropdown-list {
+max-height: 300px;
+overflow-y: auto;
+background: white;
+border-radius: 6px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+z-index: 1000;
+}
+
+.custom-select {
+position: relative;
+width: 100%;
+}
+
+.font-option {
+padding: 12px;
+cursor: pointer;
+display: flex;
+align-items: center;
+}
+
+.font-preview {
+font-size: 14px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">keyflow</h1>
+
+    <div class="input-group">
+      <label>platform</label>
+      <div class="platform-selector">
+        <button class="platform-btn">mobile</button>
+        <button class="platform-btn active">website</button>
+        <button class="platform-btn">webapp</button>
+      </div>
+    </div>
+
+    <div class="input-group layout-input">
+      <label>Layout Grid Columns</label>
+      <div class="custom-select">
+        <input type="text" 
+               id="layoutGrid" 
+               class="search-input" 
+               placeholder="Select columns"
+               readonly>
+        <div class="dropdown-list" id="gridDropdown"></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="input-group">
+      <label>Fonts & Colors</label>
+      <div class="custom-select font-select">
+        <input type="text" 
+               id="fontSearch" 
+               class="search-input" 
+               placeholder="Search fonts...">
+        <div class="dropdown-list" id="fontDropdown"></div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="color-input">
+        <div class="color-picker-wrapper">
+          <input type="color" id="colorPicker" class="color-picker" value="#E57373">
+          <input type="text" placeholder="enter name" id="colorName" class="name-input">
+        </div>
+        <button class="add-btn">add</button>
+      </div>
+      <div class="color-pills"></div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="input-group">
+      <label>#iterations</label>
+      <div class="iteration-pills">
+        <button class="iteration-pill">1</button>
+        <button class="iteration-pill active">2</button>
+        <button class="iteration-pill">3</button>
+        <button class="iteration-pill">4</button>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>#screens</label>
+      <input type="number" id="screens" min="1" max="20" value="1" placeholder="#screens">
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="input-group">
+      <label>title</label>
+      <input type="text" id="title" placeholder="Enter title">
+    </div>
+
+    <button class="flow-btn" onclick="submitForm()">enter flow state</button>
+  </div>
+
+  <script>
+    
+const GOOGLE_FONTS_API = `https://www.googleapis.com/webfonts/v1/webfonts?key=${process.env.GOOGLE_FONTS_API_KEY}&sort=popularity`;
+
+// Move formData to global scope
+const formData = {
+  platform: 'website',
+  fontFamily: '',
+  colors: [],
+  iteration: 2,
+  screens: '',
+  title: ''
+};
+
+function addColor() {
+  const colorName = document.getElementById('colorName').value;
+  const colorValue = document.getElementById('colorPicker').value;
+  
+  if (!colorName) return;
+  
+  formData.colors.push({
+    name: colorName,
+    value: colorValue
+  });
+  
+  updateColorPills();
+  
+  // Reset inputs
+  document.getElementById('colorName').value = '';
+  document.getElementById('colorPicker').value = '#E57373';
+}
+
+function updateColorPills() {
+  const pillsContainer = document.querySelector('.color-pills');
+  pillsContainer.innerHTML = formData.colors.map(color => `
+    <div class="color-pill" style="background-color: ${color.value}">
+      ${color.name}
+    </div>
+  `).join('');
+}
+
+// Add iteration pill click handler
+document.querySelectorAll('.iteration-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelector('.iteration-pill.active')?.classList.remove('active');
+    pill.classList.add('active');
+    formData.iteration = parseInt(pill.textContent);
+  });
+});
+
+class Dropdown {
+  constructor(config) {
+    this.input = document.getElementById(config.inputId);
+    this.dropdown = document.getElementById(config.dropdownId);
+    this.options = config.options || [];
+    this.allOptions = [...this.options]; // Keep original options for search
+    this.onSelect = config.onSelect || (() => {});
+    this.optionTemplate = config.optionTemplate || ((option) => option.toString());
+    this.placeholder = config.placeholder || 'Select an option';
+    this.searchable = config.searchable || false;
+    
+    this.init();
+  }
+
+  init() {
+    if (!this.input || !this.dropdown) return;
+    
+    this.input.placeholder = this.placeholder;
+    if (!this.searchable) this.input.readOnly = true;
+    
+    this.input.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!this.searchable) this.toggle();
+    });
+
+    if (this.searchable) {
+      this.input.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        this.options = this.allOptions.filter(option => 
+          option.value.toLowerCase().includes(searchTerm)
+        );
+        this.render();
+        this.show();
+      });
+
+      this.input.addEventListener('focus', () => this.show());
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.custom-select')) {
+        this.hide();
+      }
+    });
+
+    this.render();
+  }
+
+  render() {
+    const renderOption = async (option) => {
+      const value = option.value || option;
+      await preloadFont(value);
+      return `
+        <div class="font-option" data-value="${value}" style="font-family: '${value}', sans-serif !important">
+          <span class="font-preview">${value}</span>
+        </div>`;
+    };
+
+    Promise.all(this.options.map(renderOption)).then(optionsHtml => {
+      this.dropdown.innerHTML = optionsHtml.join('');
+      this.attachEventListeners();
+    });
+  }
+
+  toggle() {
+    this.dropdown.classList.toggle('active');
+  }
+
+  hide() {
+    this.dropdown.classList.remove('active');
+  }
+
+  show() {
+    this.dropdown.classList.add('active');
+  }
+
+  attachEventListeners() {
+    const options = this.dropdown.querySelectorAll('.font-option, .grid-option');
+    options.forEach(option => {
+      option.addEventListener('click', () => {
+        const value = option.getAttribute('data-value');
+        if (value) {
+          this.input.value = value;
+          this.onSelect(value);
+          this.hide();
+        }
+      });
+    });
+  }
+}
+
+// Add this to your DOMContentLoaded event
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    console.log('Loading Google Fonts...');
+    await loadGoogleFonts();
+  } catch (error) {
+    console.error('Failed to initialize:', error);
+    fallbackToSystemFonts();
+  }
+  setupGridDropdown();
+});
+
+
+
+function fallbackToSystemFonts() {
+  const systemFonts = ['Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Verdana'];
+  new Dropdown({
+    inputId: 'fontSearch',
+    dropdownId: 'fontDropdown',
+    options: systemFonts.map(font => ({
+      value: font,
+      family: font
+    })),
+    placeholder: 'Search fonts...',
+    optionTemplate: (font) => `<div style="font-family: '${font}'">${font}</div>`,
+    onSelect: (value) => {
+      formData.fontFamily = value;
+    },
+    searchable: true
+  });
+}
+
+// Platform selection
+document.querySelectorAll('.platform-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelector('.platform-btn.active')?.classList.remove('active');
+    btn.classList.add('active');
+    formData.platform = btn.textContent.toLowerCase();
+  });
+});
+
+// Screens input
+document.getElementById('screens').addEventListener('input', (e) => {
+  const value = e.target.value;
+  formData.screens = parseInt(value);
+  console.log('Selected screens:', value);
+});
+
+// Title input
+document.getElementById('title').addEventListener('input', (e) => {
+  formData.title = e.target.value;
+});
+
+function submitForm() {
+  console.log('Form Data:', formData);
+}
+
+// Add event listener for the add button
+document.querySelector('.add-btn').addEventListener('click', addColor);
+
+// Add event listener for Enter key in color name input
+document.getElementById('colorName').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    addColor();
+  }
+});
+
+function setupGridDropdown() {
+  const gridSizes = [];
+  for (let i = 4; i <= 32; i += 4) {
+    gridSizes.push({
+      value: i.toString(),
+      label: `${i} columns`
+    });
+  }
+  
+  new Dropdown({
+    inputId: 'layoutGrid',
+    dropdownId: 'gridDropdown',
+    options: gridSizes,
+    placeholder: 'Select columns',
+    optionTemplate: (option) => `
+      <div class="grid-option" data-value="${option.value}">
+        ${option.label}
+      </div>`,
+    onSelect: (value) => {
+      formData.layout = parseInt(value);
+    }
+  });
+}
+
+async function loadGoogleFonts() {
+  try {
+    const response = await fetch(GOOGLE_FONTS_API);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+    const data = await response.json();
+    if (!data?.items) throw new Error('Invalid response format');
+
+    // Preload common fonts first
+    const commonFonts = ['Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Noto Sans'];
+    await Promise.all(commonFonts.map(font => preloadFont(font)));
+
+    const fonts = data.items.slice(0, 100).map(font => ({
+      value: font.family,
+      family: font.family
+    }));
+
+    new Dropdown({
+      inputId: 'fontSearch',
+      dropdownId: 'fontDropdown',
+      options: fonts,
+      placeholder: 'Search fonts...',
+      optionTemplate: (font) => `
+        <div class="font-option" style="font-family: '${font}', sans-serif !important">
+          <span class="font-preview">${font}</span>
+        </div>`,
+      onSelect: (value) => {
+        formData.fontFamily = value;
+        preloadFont(value);
+      },
+      searchable: true
+    });
+
+  } catch (error) {
+    console.error('Error loading Google Fonts:', error);
+    fallbackToSystemFonts();
+  }
+}
+
+async function preloadFont(fontFamily) {
+  if (!fontFamily) return;
+  
+  try {
+    const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily.replace(/ /g, '+'))}:wght@400;500;600&display=swap`;
+    
+    // Check if already loaded
+    if (!document.querySelector(`link[href*="${fontFamily}"]`)) {
+      const link = document.createElement('link');
+      link.href = fontUrl;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+      
+      // Wait for font to load
+      await document.fonts.load(`16px "${fontFamily}"`);
+      
+      // Force font loading
+      const tempDiv = document.createElement('div');
+      tempDiv.style.opacity = '0';
+      tempDiv.style.fontFamily = `"${fontFamily}", sans-serif`;
+      tempDiv.textContent = 'Font Load Test';
+      document.body.appendChild(tempDiv);
+      
+      // Give browser time to process
+      await new Promise(resolve => setTimeout(resolve, 50));
+      tempDiv.remove();
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Failed to load font: ${fontFamily}`, error);
+    return false;
+  }
+}
+
+  </script>
+</body>
+</html> 

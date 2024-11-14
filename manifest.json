@@ -1,0 +1,22 @@
+{
+  "name": "keyflow",
+  "id": "1438403406886980086",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://www.googleapis.com",
+      "https://ajax.googleapis.com"
+    ],
+    "reasoning": "Required to load Google Fonts API and font files for the font selector functionality"
+  }
+}
