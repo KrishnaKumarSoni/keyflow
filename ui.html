@@ -235,7 +235,7 @@ background: #F5F5F5;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 100000;
+  z-index: 1000;
 }
 
 .dropdown-list.active {
@@ -268,7 +268,7 @@ color: white;
 .iteration-section,
 .screens-section,
 .title-section {
-margin-bottom: 8px;
+margin-bottom: 4px;
 }
 
 /* Inner element spacing */
@@ -281,11 +281,11 @@ margin-bottom: 12px;
 display: flex;
 flex-direction: column;
 gap: 4px;
-margin-bottom: 12px;
+margin-bottom: 4px;
 }
 
 .section-divider {
-margin: 8px 0;
+margin: 2px 0;
 }
 
 .slider-container {
@@ -319,12 +319,6 @@ transition: background 0.2s;
 
 input[type="range"]::-webkit-slider-thumb:hover {
 background: #333;
-}
-
-.slider-value {
-color: #666;
-font-size: 12px;
-margin-top: 4px;
 }
 
 .layout-input {
@@ -387,7 +381,7 @@ overflow-y: auto;
 background: white;
 border-radius: 6px;
 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-z-index: 100000;
+z-index: 1000;
 }
 
 .custom-select {
@@ -409,6 +403,35 @@ overflow: hidden;
 text-overflow: ellipsis;
 }
 
+.grid-pills {
+display: flex;
+gap: 8px;
+}
+
+.grid-pills button {
+flex: 1;
+padding: 8px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+background: #F5F5F5;
+color: #666;
+transition: all 0.2s;
+}
+
+.grid-pills button.active {
+background: #000;
+color: white;
+}
+
+.grid-pills button:hover {
+background: #E5E5E5;
+}
+
+.grid-pills button.active:hover {
+background: #333;
+}
+
   </style>
 </head>
 <body>
@@ -424,15 +447,16 @@ text-overflow: ellipsis;
       </div>
     </div>
 
-    <div class="input-group layout-input">
+    <div class="input-group">
       <label>Layout Grid Columns</label>
-      <div class="custom-select">
-        <input type="text" 
-               id="layoutGrid" 
-               class="search-input" 
-               placeholder="Select columns"
-               readonly>
-        <div class="dropdown-list" id="gridDropdown"></div>
+      <div class="grid-pills">
+        <button class="iteration-pill" data-columns="4">4</button>
+        <button class="iteration-pill" data-columns="8">8</button>
+        <button class="iteration-pill" data-columns="12">12</button>
+        <button class="iteration-pill" data-columns="16">16</button>
+        <button class="iteration-pill" data-columns="18">18</button>
+        <button class="iteration-pill" data-columns="20">20</button>
+        <button class="iteration-pill" data-columns="24">24</button>
       </div>
     </div>
 
@@ -484,7 +508,7 @@ text-overflow: ellipsis;
       <input type="text" id="title" placeholder="Enter title">
     </div>
 
-    <button class="flow-btn" id="flowButton">enter flow state</button>
+    <button class="flow-btn" onclick="window.submitForm()">enter flow state</button>
   </div>
 
   <script>
@@ -584,20 +608,22 @@ class Dropdown {
     this.render();
   }
 
-  render() {
-    const renderOption = async (option) => {
+  async render() {
+    const optionsHtml = [];
+    
+    for (const option of this.options) {
       const value = option.value || option;
       await preloadFont(value);
-      return `
-        <div class="font-option" data-value="${value}" style="font-family: '${value}', sans-serif !important">
-          <span class="font-preview">${value}</span>
-        </div>`;
-    };
-
-    Promise.all(this.options.map(renderOption)).then(optionsHtml => {
-      this.dropdown.innerHTML = optionsHtml.join('');
-      this.attachEventListeners();
-    });
+      
+      optionsHtml.push(`
+        <div class="font-option" data-value="${value}">
+          <span class="font-preview" style="font-family: '${value}', sans-serif">${value}</span>
+        </div>
+      `);
+    }
+    
+    this.dropdown.innerHTML = optionsHtml.join('');
+    this.attachEventListeners();
   }
 
   toggle() {
@@ -615,8 +641,9 @@ class Dropdown {
   attachEventListeners() {
     const options = this.dropdown.querySelectorAll('.font-option, .grid-option');
     options.forEach(option => {
-      option.addEventListener('click', () => {
-        const value = option.getAttribute('data-value');
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const value = option.getAttribute('data-value') || option.textContent;
         if (value) {
           this.input.value = value;
           this.onSelect(value);
@@ -646,7 +673,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Failed to initialize:', error);
     fallbackToSystemFonts();
   }
-  setupGridDropdown();
+  setupGridColumns();
 });
 
 
@@ -720,28 +747,22 @@ document.getElementById('colorName').addEventListener('keypress', (e) => {
   }
 });
 
-function setupGridDropdown() {
-  const gridSizes = [];
-  for (let i = 4; i <= 32; i += 4) {
-    gridSizes.push({
-      value: i.toString(),
-      label: `${i} columns`
-    });
-  }
+function setupGridColumns() {
+  const gridPills = document.querySelectorAll('.grid-pills .iteration-pill');
   
-  new Dropdown({
-    inputId: 'layoutGrid',
-    dropdownId: 'gridDropdown',
-    options: gridSizes,
-    placeholder: 'Select columns',
-    optionTemplate: (option) => `
-      <div class="grid-option" data-value="${option.value}">
-        ${option.label}
-      </div>`,
-    onSelect: (value) => {
-      formData.layout = parseInt(value);
-    }
+  gridPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelector('.grid-pills .iteration-pill.active')?.classList.remove('active');
+      pill.classList.add('active');
+      formData.columns = parseInt(pill.getAttribute('data-columns'));
+    });
   });
+  
+  // Set default active column (12)
+  const defaultPill = document.querySelector('.grid-pills [data-columns="12"]');
+  if (defaultPill) {
+    defaultPill.click();
+  }
 }
 
 async function loadGoogleFonts() {
@@ -801,9 +822,6 @@ async function preloadFont(fontFamily) {
     return false;
   }
 }
-
-// Use addEventListener instead of onclick
-document.getElementById('flowButton').addEventListener('click', window.submitForm);
 
   </script>
 </body>
