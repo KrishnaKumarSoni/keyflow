@@ -43,7 +43,7 @@ interface PluginMessage {
 // This shows the HTML page in "ui.html".
 figma.showUI(__html__, { 
   width: 400,
-  height: 680,
+  height: 760,
   themeColors: true
 });
 
@@ -74,11 +74,20 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
           color: { r: 35/255, g: 35/255, b: 35/255 }
         }];
         newPages.push(page);
+        // Ensure page is properly created before moving on
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Set first page as current
+      // Set first page as current and wait for it to be ready
       const coverPage = newPages[0];
-      await figma.setCurrentPageAsync(coverPage);
+      if (!coverPage) throw new Error('Failed to create cover page');
+      
+      try {
+        await figma.setCurrentPageAsync(coverPage);
+      } catch (error) {
+        console.error('Error setting current page:', error);
+        throw new Error('Failed to set current page');
+      }
 
       // Create cover frame
       const coverFrame = figma.createFrame();

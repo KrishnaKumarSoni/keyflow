@@ -6,7 +6,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
-    "build": "tsc && cp ui.html dist/"
+    "build": "tsc -p tsconfig.json",
+    "watch": "npm run build -- --watch"
   },
   "author": "",
   "license": "",
@@ -40,5 +41,16 @@
         }
       ]
     }
-  }
+  },
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["es6", "dom"],
+    "moduleResolution": "node",
+    "typeRoots": ["./node_modules/@types", "./node_modules/@figma"],
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }

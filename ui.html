@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
   <style>
    
 * {
@@ -78,7 +79,7 @@ label {
 font-size: 14px;
 font-weight: 600;
 color: #333;
-margin-bottom: 8px;
+margin-bottom: 2px;
 }
 
 select, input {
@@ -286,7 +287,7 @@ background: #F5F5F5;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 9000;
 }
 
 .dropdown-list.active {
@@ -332,11 +333,11 @@ margin-bottom: 12px;
 display: flex;
 flex-direction: column;
 gap: 4px;
-margin-bottom: 4px;
+margin-bottom: 2px;
 }
 
 .section-divider {
-margin: 2px 0;
+margin: 0;
 }
 
 .slider-container {
@@ -423,7 +424,7 @@ border: 4px solid white;
 }
 
 .container {
-padding-bottom: 120px;
+padding-bottom: 20px;
 }
 
 .dropdown-list {
@@ -610,6 +611,43 @@ background: #333;
   content: 'S';
 }
 
+img {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.donate-btn {
+  background: #FF6B00;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.donate-btn:hover {
+  background: #E65C00;
+}
+
+.input-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 2px;
+}
+
+.input-row .input-group {
+  flex: 1;
+}
+
   </style>
 </head>
 <body>
@@ -620,8 +658,10 @@ background: #333;
     </div>
   </div>
   <div class="container">
-    <h1 class="title">keyflow</h1>
-
+    <div class="header">
+      <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; letter-spacing: -0.02em; text-transform: lowercase;">keyflow</h1>
+      <a href="https://buy.stripe.com/7sI00AfiO2KNdSUaEF" target="_blank" class="donate-btn">donate</a>
+    </div>
     <div class="input-group">
       <label>platform</label>
       <div class="platform-selector">
@@ -685,29 +725,31 @@ background: #333;
 
     <div class="section-divider"></div>
 
-    <div class="input-group">
-      <label>#iterations</label>
-      <div class="iteration-pills">
-        <button class="iteration-pill">1</button>
-        <button class="iteration-pill active">2</button>
-        <button class="iteration-pill">3</button>
-        <button class="iteration-pill">4</button>
+    <div class="input-row">
+      <div class="input-group">
+        <label>#iterations</label>
+        <div class="iteration-pills">
+          <button class="iteration-pill">1</button>
+          <button class="iteration-pill active">2</button>
+          <button class="iteration-pill">3</button>
+          <button class="iteration-pill">4</button>
+        </div>
       </div>
-    </div>
-
-    <div class="input-group">
-      <label>#screens</label>
-      <input type="number" id="screens" min="1" max="20" value="1" placeholder="#screens">
+      
+      <div class="input-group">
+        <label>#screens</label>
+        <input type="number" id="screens" min="1" max="20" value="1" placeholder="#screens">
+      </div>
     </div>
 
     <div class="section-divider"></div>
 
     <div class="input-group">
       <label>title</label>
-      <input type="text" id="title" placeholder="Enter title">
+      <input type="text" id="title" placeholder="Enter project title">
     </div>
 
-    <button class="flow-btn" onclick="window.submitForm()">enter flow state</button>
+    <button class="flow-btn" id="submitButton">enter flow state</button>
   </div>
 
   <script>
@@ -825,6 +867,7 @@ class Dropdown {
     this.searchable = config.searchable || false;
     
     this.init();
+    this.render();
   }
 
   init() {
@@ -861,12 +904,12 @@ class Dropdown {
   }
 
   async render() {
-    const optionsHtml = [];
+    this.dropdown.innerHTML = '<div class="font-option">Loading...</div>';
     
+    const optionsHtml = [];
     for (const option of this.options) {
       const value = option.value || option;
       await preloadFont(value);
-      
       optionsHtml.push(`
         <div class="font-option" data-value="${value}">
           <span class="font-preview" style="font-family: '${value}', sans-serif">${value}</span>
@@ -1002,7 +1045,7 @@ document.getElementById('title').addEventListener('input', (e) => {
   formData.title = e.target.value;
 });
 
-window.submitForm = function() {
+document.getElementById('submitButton').addEventListener('click', () => {
   const title = document.getElementById('title').value;
   const screens = document.getElementById('screens').value;
   
@@ -1022,7 +1065,7 @@ window.submitForm = function() {
       }
     }
   }, '*');
-}
+});
 
 // Add event listener for the add button
 document.querySelector('.add-btn').addEventListener('click', addColor);
