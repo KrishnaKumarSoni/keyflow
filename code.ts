@@ -16,6 +16,7 @@ interface FormData {
   screens: string;
   title?: string;
   layout?: string;
+  columns: number;
 }
 
 // Update message type
@@ -117,11 +118,13 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
       // Create frames in High Fidelity page
       const hifiPage = newPages[2];
       await figma.setCurrentPageAsync(hifiPage);
+      const columns = msg.formData.columns || 12;
       createFrameGrid(hifiPage, {
         rows: iterations,
         cols: screens,
         frameSize: platformSize,
-        prefix: 'Screen'
+        prefix: 'Screen',
+        columns: columns
       });
 
       // Create frames in Low Fidelity page
@@ -131,7 +134,8 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
         rows: iterations,
         cols: screens,
         frameSize: platformSize,
-        prefix: 'Screen'
+        prefix: 'Screen',
+        columns: columns
       });
 
       // Create frames in Final Delivery page
@@ -186,9 +190,10 @@ function createFrameGrid(page: PageNode, options: {
   rows: number,
   cols: number,
   frameSize: { width: number, height: number },
-  prefix: string
+  prefix: string,
+  columns?: number
 }) {
-  const { rows, cols, frameSize, prefix } = options;
+  const { rows, cols, frameSize, prefix, columns } = options;
   const frames: FrameNode[] = [];
 
   for (let row = 0; row < rows; row++) {
@@ -199,6 +204,12 @@ function createFrameGrid(page: PageNode, options: {
       frame.y = row * (frameSize.height + SPACING) + SPACING;
       frame.name = `${prefix} ${col + 1}.${row + 1}`;
       frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+      
+      // Add layout grid if columns is specified
+      if (columns) {
+        frame.layoutGrids = createLayoutGrid(columns);
+      }
+      
       page.appendChild(frame);
       frames.push(frame);
     }
@@ -216,4 +227,16 @@ function createLargeFrame(page: PageNode, name: string) {
   frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
   page.appendChild(frame);
   return frame;
+}
+
+function createLayoutGrid(columns: number): LayoutGrid[] {
+  return [{
+    pattern: "COLUMNS",
+    alignment: "STRETCH",
+    gutterSize: 12,
+    count: columns,
+    offset: 0,
+    visible: true,
+    color: { r: 0.1, g: 0.1, b: 0.1, a: 0.2 }
+  } as LayoutGrid];
 }
