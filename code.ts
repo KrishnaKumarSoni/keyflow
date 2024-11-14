@@ -11,7 +11,7 @@ const PLATFORM_SIZES: Record<PlatformType, { width: number; height: number }> = 
 interface FormData {
   platform: PlatformType;
   fontFamily?: string;
-  colors?: Array<{ name: string; value: string }>;
+  colors?: Array<{ color: string; name: string }>;
   iteration: number;
   screens: string;
   title?: string;
@@ -80,8 +80,8 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
       coverPage.appendChild(coverFrame);
 
       // Handle background color
-      if (msg.formData.colors?.[0]?.value) {
-        const rgb = hexToRgb(msg.formData.colors[0].value);
+      if (msg.formData.colors?.[0]?.color) {
+        const rgb = hexToRgb(msg.formData.colors[0].color);
         coverFrame.fills = [{
           type: 'SOLID',
           color: { r: rgb.r/255, g: rgb.g/255, b: rgb.b/255 }
@@ -165,7 +165,110 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
       // Set back to cover page
       await figma.setCurrentPageAsync(coverPage);
 
-      figma.notify("Flow pages created successfully!");
+      // Font preset constants
+      const FONT_PRESETS = {
+        DISPLAY: {
+          LARGE: { size: 57, style: "Bold", lineHeight: 1.2 },
+          MEDIUM: { size: 45, style: "Bold", lineHeight: 1.2 },
+          SMALL: { size: 36, style: "Bold", lineHeight: 1.2 }
+        },
+        HEADING: {
+          H1: { size: 32, style: "Bold", lineHeight: 1.3 },
+          H2: { size: 28, style: "SemiBold", lineHeight: 1.3 },
+          H3: { size: 24, style: "SemiBold", lineHeight: 1.3 },
+          H4: { size: 20, style: "SemiBold", lineHeight: 1.4 },
+          H5: { size: 18, style: "Medium", lineHeight: 1.4 },
+          H6: { size: 16, style: "Medium", lineHeight: 1.4 }
+        },
+        BODY: {
+          LARGE: { size: 16, style: "Regular", lineHeight: 1.5 },
+          MEDIUM: { size: 14, style: "Regular", lineHeight: 1.5 },
+          SMALL: { size: 12, style: "Regular", lineHeight: 1.5 }
+        },
+        LABEL: {
+          LARGE: { size: 14, style: "Medium", lineHeight: 1.4 },
+          MEDIUM: { size: 12, style: "Medium", lineHeight: 1.4 },
+          SMALL: { size: 11, style: "Medium", lineHeight: 1.4 }
+        }
+      };
+
+      // Helper functions for style creation
+      async function createTextStyle(name: string, fontFamily: string, config: { size: number, style: string, lineHeight: number }) {
+        const fontName = { family: fontFamily, style: config.style };
+        
+        try {
+          await figma.loadFontAsync(fontName);
+        } catch {
+          fontName.style = "Regular";
+          await figma.loadFontAsync(fontName);
+        }
+
+        const style = figma.createTextStyle();
+        style.name = name;
+        style.fontName = fontName;
+        style.fontSize = config.size;
+        style.lineHeight = { value: config.size * config.lineHeight, unit: 'PIXELS' };
+        
+        return style;
+      }
+
+      function createColorStyle(name: string, color: RGB) {
+        try {
+          const style = figma.createPaintStyle();
+          style.name = name;
+          style.paints = [{
+            type: 'SOLID',
+            color: {
+              r: Math.max(0, Math.min(1, color.r)),
+              g: Math.max(0, Math.min(1, color.g)),
+              b: Math.max(0, Math.min(1, color.b))
+            }
+          }];
+          return style;
+        } catch (error) {
+          console.error(`Failed to create color style ${name}:`, error);
+          return null;
+        }
+      }
+
+      async function createDesignSystemStyles(formData: FormData) {
+        if (formData.fontFamily) {
+          const fontFamily = formData.fontFamily;
+          
+          for (const [category, sizes] of Object.entries(FONT_PRESETS)) {
+            for (const [size, config] of Object.entries(sizes)) {
+              try {
+                const name = `${category}/${size}`;
+                await createTextStyle(name, fontFamily, config);
+              } catch (err) {
+                console.error(`Failed to create text style ${category}/${size}:`, err);
+              }
+            }
+          }
+        }
+
+        if (formData.colors?.length) {
+          for (const colorData of formData.colors) {
+            const rgb = hexToRgb(colorData.color);
+            createColorStyle(
+              colorData.name,
+              { 
+                r: rgb.r / 255, 
+                g: rgb.g / 255, 
+                b: rgb.b / 255 
+              }
+            );
+          }
+        }
+      }
+
+      // Create design system styles
+      await createDesignSystemStyles(msg.formData);
+
+      // Set back to cover page
+      await figma.setCurrentPageAsync(coverPage);
+
+      figma.notify("Flow pages and styles created successfully!");
     } catch (error) {
       console.error('Plugin error:', error);
       figma.notify(`Error: ${error}`, {error: true});

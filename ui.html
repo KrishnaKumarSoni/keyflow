@@ -161,12 +161,12 @@ margin-top: 12px;
 padding: 4px 12px;
 border-radius: 999px;
 font-size: 12px;
-color: white;
 display: inline-flex;
 align-items: center;
-justify-content: center;
+justify-content: space-between;
 min-width: 60px;
 height: 24px;
+gap: 8px;
 }
 
 .iteration-pills {
@@ -188,6 +188,7 @@ color: #666;
 background: #000;
 color: white;
 }
+
 
 .flow-btn {
 position: fixed;
@@ -432,6 +433,27 @@ background: #E5E5E5;
 background: #333;
 }
 
+.color-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.remove-color {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.remove-color:hover {
+  opacity: 1;
+}
+
   </style>
 </head>
 <body>
@@ -525,31 +547,49 @@ const formData = {
   title: ''
 };
 
-function addColor() {
-  const colorName = document.getElementById('colorName').value;
-  const colorValue = document.getElementById('colorPicker').value;
+function createColorPill(color, name) {
+  const pill = document.createElement('div');
+  pill.className = 'color-pill';
+  pill.style.backgroundColor = color;
   
-  if (!colorName) return;
+  const colorText = document.createElement('span');
+  colorText.textContent = name || color;
+  pill.appendChild(colorText);
   
-  formData.colors.push({
-    name: colorName,
-    value: colorValue
-  });
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'remove-color';
+  removeBtn.textContent = '×';
+  removeBtn.onclick = (e) => {
+    e.stopPropagation();
+    // Remove from UI
+    pill.remove();
+    // Remove from formData
+    formData.colors = formData.colors.filter(c => c.color !== color);
+  };
   
-  updateColorPills();
-  
-  // Reset inputs
-  document.getElementById('colorName').value = '';
-  document.getElementById('colorPicker').value = '#E57373';
+  pill.appendChild(removeBtn);
+  return pill;
 }
 
-function updateColorPills() {
-  const pillsContainer = document.querySelector('.color-pills');
-  pillsContainer.innerHTML = formData.colors.map(color => `
-    <div class="color-pill" style="background-color: ${color.value}">
-      ${color.name}
-    </div>
-  `).join('');
+function addColor() {
+  const colorPicker = document.getElementById('colorPicker');
+  const colorName = document.getElementById('colorName');
+  const colorPills = document.querySelector('.color-pills');
+  
+  if (colorPicker && colorName && colorPills) {
+    const color = colorPicker.value;
+    const name = colorName.value.trim() || color;
+    
+    // Add to formData
+    formData.colors = formData.colors || [];
+    formData.colors.push({ color, name });
+    
+    // Add to UI
+    colorPills.appendChild(createColorPill(color, name));
+    
+    // Reset input
+    colorName.value = '';
+  }
 }
 
 // Iteration pills
