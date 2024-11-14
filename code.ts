@@ -8,10 +8,17 @@ const PLATFORM_SIZES: Record<PlatformType, { width: number; height: number }> = 
 };
 
 // Add interface for form data
+interface ColorData {
+  color: string;
+  name: string;
+  type?: 'primary' | 'secondary' | 'regular';
+}
+
 interface FormData {
   platform: PlatformType;
-  fontFamily?: string;
-  colors?: Array<{ color: string; name: string }>;
+  headingFont?: string;
+  bodyFont?: string;
+  colors: ColorData[];
   iteration: number;
   screens: string;
   title?: string;
@@ -88,24 +95,8 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
         }];
       }
 
-      // Handle title text
-      if (msg.formData.title) {
-        const fontFamily = msg.formData.fontFamily || "Inter";
-        await figma.loadFontAsync({ family: fontFamily, style: "Regular" });
-        
-        const titleText = figma.createText();
-        coverFrame.appendChild(titleText);
-        
-        titleText.fontName = { family: fontFamily, style: "Regular" };
-        titleText.characters = msg.formData.title;
-        titleText.fontSize = 200;
-        titleText.textAlignHorizontal = "CENTER";
-        titleText.textAlignVertical = "CENTER";
-        
-        // Position text after all properties are set
-        titleText.x = (coverFrame.width - titleText.width) / 2;
-        titleText.y = (coverFrame.height - titleText.height) / 2;
-      }
+      // Create cover page content
+      await createCoverPage(coverFrame, msg.formData);
 
       // Set thumbnail
       await figma.setFileThumbnailNodeAsync(coverFrame);
@@ -232,16 +223,37 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
       }
 
       async function createDesignSystemStyles(formData: FormData) {
-        if (formData.fontFamily) {
-          const fontFamily = formData.fontFamily;
+        // Create heading styles
+        if (formData.headingFont) {
+          const headingFont = formData.headingFont;
           
           for (const [category, sizes] of Object.entries(FONT_PRESETS)) {
-            for (const [size, config] of Object.entries(sizes)) {
-              try {
-                const name = `${category}/${size}`;
-                await createTextStyle(name, fontFamily, config);
-              } catch (err) {
-                console.error(`Failed to create text style ${category}/${size}:`, err);
+            if (category === 'HEADING' || category === 'DISPLAY') {
+              for (const [size, config] of Object.entries(sizes)) {
+                try {
+                  const name = `${category}/${size}`;
+                  await createTextStyle(name, headingFont, config);
+                } catch (err) {
+                  console.error(`Failed to create text style ${category}/${size}:`, err);
+                }
+              }
+            }
+          }
+        }
+
+        // Create body styles
+        if (formData.bodyFont) {
+          const bodyFont = formData.bodyFont;
+          
+          for (const [category, sizes] of Object.entries(FONT_PRESETS)) {
+            if (category === 'BODY' || category === 'LABEL') {
+              for (const [size, config] of Object.entries(sizes)) {
+                try {
+                  const name = `${category}/${size}`;
+                  await createTextStyle(name, bodyFont, config);
+                } catch (err) {
+                  console.error(`Failed to create text style ${category}/${size}:`, err);
+                }
               }
             }
           }
@@ -350,4 +362,60 @@ function createLayoutGrid(columns: number): LayoutGrid[] {
     visible: true,
     color: { r: 0.1, g: 0.1, b: 0.1, a: 0.2 }
   } as LayoutGrid];
+}
+
+// Create cover frame and text elements
+async function createCoverPage(coverFrame: FrameNode, formData: FormData) {
+  // Format today's date
+  const date = new Date();
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+  const suffix = getDaySuffix(day);
+  const dateString = `Created at ${day}${suffix} ${month} ${year}`;
+
+  // Load fonts
+  const headingFontName = { family: formData.headingFont || 'Inter', style: 'Regular' };
+  const bodyFontName = { family: formData.bodyFont || 'Inter', style: 'Regular' };
+
+  try {
+    await figma.loadFontAsync(headingFontName);
+    await figma.loadFontAsync(bodyFontName);
+
+    // Create title text
+    const titleText = figma.createText();
+    coverFrame.appendChild(titleText);
+    titleText.fontName = headingFontName;
+    titleText.characters = formData.title || 'Untitled Project';
+    titleText.fontSize = 200;
+    titleText.textAlignHorizontal = "CENTER";
+    titleText.textAlignVertical = "CENTER";
+    titleText.x = (coverFrame.width - titleText.width) / 2;
+    titleText.y = (coverFrame.height - titleText.height) / 2 - 40; // Offset up for subtitle
+
+    // Create subtitle text
+    const subtitleText = figma.createText();
+    coverFrame.appendChild(subtitleText);
+    subtitleText.fontName = bodyFontName;
+    subtitleText.characters = dateString;
+    subtitleText.fontSize = 32;
+    subtitleText.textAlignHorizontal = "CENTER";
+    subtitleText.textAlignVertical = "CENTER";
+    subtitleText.x = (coverFrame.width - subtitleText.width) / 2;
+    subtitleText.y = titleText.y + titleText.height + 40; // Position below title
+  } catch (err) {
+    console.error('Font loading error:', err);
+    figma.notify('Error loading fonts, using fallback font', { error: true });
+  }
+}
+
+// Helper function for date suffix
+function getDaySuffix(day: number): string {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
 }

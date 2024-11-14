@@ -158,15 +158,65 @@ margin-top: 12px;
 }
 
 .color-pill {
-padding: 4px 12px;
-border-radius: 999px;
-font-size: 12px;
 display: inline-flex;
 align-items: center;
-justify-content: space-between;
-min-width: 60px;
-height: 24px;
 gap: 8px;
+padding: 6px;
+padding-right: 12px;
+border-radius: 6px;
+font-size: 12px;
+background: white;
+border: 1px solid #E5E5E5;
+box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.color-indicator {
+width: 24px;
+height: 24px;
+border-radius: 4px;
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.color-indicator.primary::after,
+.color-indicator.secondary::after {
+content: 'P';
+position: absolute;
+color: white;
+font-size: 11px;
+font-weight: 600;
+opacity: 0.5;
+/* Remove transform and use flex centering */
+/* Remove text-shadow that might cause blur */
+/* Ensure crisp text rendering */
+-webkit-font-smoothing: antialiased;
+font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.color-indicator.secondary::after {
+content: 'S';
+}
+
+.color-name {
+color: #333;
+font-weight: 500;
+}
+
+.remove-pill {
+cursor: pointer;
+color: #666;
+font-size: 14px;
+padding: 2px 6px;
+margin-left: 4px;
+border-radius: 4px;
+transition: all 0.2s;
+}
+
+.remove-pill:hover {
+background: rgba(0,0,0,0.05);
+color: #333;
 }
 
 .iteration-pills {
@@ -434,49 +484,141 @@ background: #333;
 }
 
 .color-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #F5F5F5;
+}
+
+.color-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.color-indicator.primary::after,
+.color-indicator.secondary::after {
+  content: 'P';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  opacity: 0.5;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.color-indicator.secondary::after {
+  content: 'S';
+}
+
+.remove-pill {
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 4px;
+}
+
+.font-row {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.remove-color {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  font-size: 14px;
-  line-height: 1;
-  opacity: 0.7;
+.font-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.remove-color:hover {
-  opacity: 1;
+.sublabel {
+  color: #666;
+  font-size: 12px;
+  min-width: 70px;
+  margin: 0;
 }
 
-.color-pill {
-  position: relative;
-  padding-left: 28px;  /* Increased to accommodate label */
+.font-group .custom-select {
+  flex: 1;
 }
 
-.color-label {
-  position: absolute;
-  left: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #000;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.color-indicator {
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  background-color: var(--color);
+}
+
+.color-indicator.primary::after,
+.color-indicator.secondary::after {
+  content: 'P';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
   font-size: 10px;
-  font-weight: bold;
+  font-weight: 600;
+  opacity: 0.5;
+}
+
+.color-indicator.secondary::after {
+  content: 'S';
 }
 
   </style>
 </head>
 <body>
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Loading resources...</p>
+    </div>
+  </div>
   <div class="container">
     <h1 class="title">keyflow</h1>
 
@@ -505,13 +647,28 @@ background: #333;
     <div class="section-divider"></div>
 
     <div class="input-group">
-      <label>Fonts & Colors</label>
-      <div class="custom-select font-select">
-        <input type="text" 
-               id="fontSearch" 
-               class="search-input" 
-               placeholder="Search fonts...">
-        <div class="dropdown-list" id="fontDropdown"></div>
+      <label>Fonts</label>
+      <div class="font-row">
+        <div class="font-group">
+          <label class="sublabel">Headings</label>
+          <div class="custom-select font-select">
+            <input type="text" 
+                   id="headingFontSearch" 
+                   class="search-input" 
+                   placeholder="Search heading fonts...">
+            <div class="dropdown-list" id="headingFontDropdown"></div>
+          </div>
+        </div>
+        <div class="font-group">
+          <label class="sublabel">Body</label>
+          <div class="custom-select font-select">
+            <input type="text" 
+                   id="bodyFontSearch" 
+                   class="search-input" 
+                   placeholder="Search body fonts...">
+            <div class="dropdown-list" id="bodyFontDropdown"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -560,7 +717,8 @@ const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2?family=Roboto:wght@4
 // Move formData to global scope
 const formData = {
   platform: 'website',
-  fontFamily: '',
+  headingFont: '',
+  bodyFont: '',
   colors: [],
   iteration: 2,
   screens: '',
@@ -604,27 +762,37 @@ function createColorPill(color, name, index) {
 function addColor() {
   const colorPicker = document.getElementById('colorPicker');
   const colorName = document.getElementById('colorName');
-  const colorPills = document.querySelector('.color-pills');
-  
-  if (colorPicker && colorName && colorPills) {
-    const color = colorPicker.value;
-    const name = colorName.value.trim() || color;
-    
-    // Add to formData
-    formData.colors = formData.colors || [];
-    const index = formData.colors.length;
-    formData.colors.push({ 
-      color, 
-      name,
-      type: index === 0 ? 'primary' : index === 1 ? 'secondary' : 'regular'
-    });
-    
-    // Add to UI
-    colorPills.appendChild(createColorPill(color, name, index));
-    
-    // Reset input
-    colorName.value = '';
+  const color = colorPicker.value;
+  const name = colorName.value.trim();
+
+  if (!name) {
+    figma.notify('Please enter a color name');
+    return;
   }
+
+  const newColor = {
+    color,
+    name,
+    type: formData.colors.length === 0 ? 'primary' : 
+          formData.colors.length === 1 ? 'secondary' : 'regular'
+  };
+
+  formData.colors.push(newColor);
+  colorName.value = '';
+  renderColorPills();
+}
+
+function removeColor(index) {
+  formData.colors.splice(index, 1);
+  
+  // Reassign types after removal
+  formData.colors = formData.colors.map((color, idx) => ({
+    ...color,
+    type: idx === 0 ? 'primary' : 
+          idx === 1 ? 'secondary' : 'regular'
+  }));
+  
+  renderColorPills();
 }
 
 // Iteration pills
@@ -738,29 +906,62 @@ class Dropdown {
   }
 }
 
-// Add this to your DOMContentLoaded event
-document.addEventListener('DOMContentLoaded', async () => {
+// Cache for Google Fonts API response
+let googleFontsCache = null;
+
+async function loadGoogleFonts() {
   try {
-    const fontSearchInput = document.getElementById('fontSearch');
-    if (fontSearchInput) {
-      fontSearchInput.placeholder = 'Loading fonts...';
-      fontSearchInput.disabled = true;
+    if (googleFontsCache) {
+      initializeFontDropdowns(googleFontsCache);
+      return;
     }
+
+    const GOOGLE_FONTS_API_KEY = 'AIzaSyA0gtPviSADu5a6TWOWl9PC0IGEsmJIoc0';
+    const response = await fetch(`https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_FONTS_API_KEY}&sort=popularity`);
     
-    await loadGoogleFonts();
-    
-    if (fontSearchInput) {
-      fontSearchInput.placeholder = 'Search fonts...';
-      fontSearchInput.disabled = false;
-    }
+    if (!response.ok) throw new Error('Failed to fetch Google Fonts');
+
+    const data = await response.json();
+    googleFontsCache = data.items.map(font => ({
+      value: font.family,
+      category: font.category
+    }));
+
+    initializeFontDropdowns(googleFontsCache);
   } catch (error) {
-    console.error('Failed to initialize:', error);
+    console.error('Google Fonts API Error:', error);
     fallbackToSystemFonts();
   }
-  setupGridColumns();
-});
+}
 
+function initializeFontDropdowns(fonts) {
+  // Initialize dropdowns for both heading and body fonts
+  new Dropdown({
+    inputId: 'headingFontSearch',
+    dropdownId: 'headingFontDropdown',
+    options: fonts,
+    placeholder: 'Search heading fonts...',
+    searchable: true,
+    onSelect: (value) => {
+      formData.headingFont = value;
+      // Only preload when actually selected
+      preloadFont(value);
+    }
+  });
 
+  new Dropdown({
+    inputId: 'bodyFontSearch',
+    dropdownId: 'bodyFontDropdown',
+    options: fonts,
+    placeholder: 'Search body fonts...',
+    searchable: true,
+    onSelect: (value) => {
+      formData.bodyFont = value;
+      // Only preload when actually selected
+      preloadFont(value);
+    }
+  });
+}
 
 function fallbackToSystemFonts() {
   const systemFonts = ['Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Verdana'];
@@ -812,11 +1013,12 @@ window.submitForm = function() {
         title: title,
         screens: screens,
         platform: formData.platform,
-        fontFamily: formData.fontFamily,
+        headingFont: formData.headingFont,
+        bodyFont: formData.bodyFont,
         colors: formData.colors,
         iteration: formData.iteration,
         layout: formData.layout,
-        columns: formData.columns || 12 // Add default value
+        columns: formData.columns || 12
       }
     }
   }, '*');
@@ -842,39 +1044,6 @@ function setupGridColumns() {
     console.error('Grid initialization failed:', error);
     // Set default value in formData even if UI fails
     formData.columns = 12;
-  }
-}
-
-async function loadGoogleFonts() {
-  try {
-    const GOOGLE_FONTS_API_KEY = 'AIzaSyA0gtPviSADu5a6TWOWl9PC0IGEsmJIoc0';
-    const response = await fetch(`https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_FONTS_API_KEY}&sort=popularity`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch Google Fonts');
-    }
-
-    const data = await response.json();
-    const fonts = data.items.map(font => ({
-      value: font.family,
-      category: font.category
-    }));
-
-    // Initialize dropdown with fetched fonts
-    new Dropdown({
-      inputId: 'fontSearch',
-      dropdownId: 'fontDropdown',
-      options: fonts,
-      placeholder: 'Search fonts...',
-      searchable: true,
-      onSelect: (value) => {
-        formData.fontFamily = value;
-      }
-    });
-
-  } catch (error) {
-    console.error('Google Fonts API Error:', error);
-    fallbackToSystemFonts();
   }
 }
 
@@ -929,6 +1098,67 @@ function getContrastColor(hexcolor) {
   
   return luminance > 0.5 ? '#000000' : '#ffffff';
 }
+
+function renderColorPills() {
+  const pillsContainer = document.querySelector('.color-pills');
+  if (!pillsContainer) return;
+  
+  pillsContainer.innerHTML = '';
+  
+  formData.colors.forEach((colorData, index) => {
+    const pill = document.createElement('div');
+    pill.className = 'color-pill';
+    
+    const indicator = document.createElement('div');
+    indicator.className = 'color-indicator';
+    indicator.style.backgroundColor = colorData.color;
+    
+    if (colorData.type === 'primary' || colorData.type === 'secondary') {
+      indicator.classList.add(colorData.type);
+      indicator.textContent = colorData.type === 'primary' ? 'P' : 'S';
+    }
+    
+    const name = document.createElement('span');
+    name.textContent = colorData.name;
+    
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'remove-pill';
+    removeBtn.textContent = '×';
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      removeColor(index);
+    };
+    
+    pill.appendChild(indicator);
+    pill.appendChild(name);
+    pill.appendChild(removeBtn);
+    pillsContainer.appendChild(pill);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const loadingScreen = document.getElementById('loadingScreen');
+  
+  try {
+    // Initialize all resources
+    await loadGoogleFonts();
+    
+    // Hide loading screen
+    if (loadingScreen) {
+      loadingScreen.style.opacity = '0';
+      loadingScreen.style.visibility = 'hidden';
+      
+      // Remove from DOM after transition
+      setTimeout(() => {
+        loadingScreen.remove();
+      }, 300);
+    }
+  } catch (error) {
+    console.error('Failed to initialize:', error);
+    // Remove loading screen even if there's an error
+    loadingScreen?.remove();
+  }
+});
 
   </script>
 </body>
